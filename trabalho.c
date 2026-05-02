@@ -1,36 +1,43 @@
-	#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-// Cria??o do tipo Elemento (Cada dado de uma Matriz Esparsa)
+// ================= STRUCTS =================
+
+// Tipo Elemento (Cada dado de uma Matriz_Lista (Matriz Esparsa))
 typedef struct elemento
 {
 	float dado;
-	int lin, col;
+	int l, c; // linha e coluna do elemento, que deve respeitar o limite lin e col da matriz
 	struct elemento *prox;
 } Elemento;
 
-// Cria??o do tipo Item_Lista (Cada ind?ce que aponta para o primeiro elemento de uma Matriz)
-typedef struct item
+// Tipo Matriz_Lista (Como a matriz está representada na lista)
+typedef struct matriz
 {
 	int id;
+	int lin, col; // limite de l e c do elemento 
 	Elemento *prim;
-	struct item *prox;
-} Item_Lista;
+	struct matriz *prox;
+} Matriz_Lista;
 
-typedef struct Bloco
-{
-	int dado;
-	struct Bloco *prox;
-} Nodo;
+// typedef struct Bloco
+// {
+// 	int dado;
+// 	struct Bloco *prox;
+// } Nodo;
 
-// Cria??o do tipo OpcaoMenu (Apenas para organiza??o do menu de op??es)
+// Criação do tipo OpcaoMenu (Apenas para organização do menu de opções)
 typedef struct
 {
 	char titulo[50];
-	void (*funcao)(Nodo **);
+	void (*funcao)(Matriz_Lista **);
 } OpcaoMenu;
 
-// Cria um elemento para uma Matriz Esparsa
+// ================= FUNÇÕES =================
+
+// CRIAÇÃO DE TDA (alocando espaço na memória)
+
+// Cria um elemento para uma Matriz_Lista 
 Elemento *cria_elem()
 {
 	Elemento *p;
@@ -43,11 +50,11 @@ Elemento *cria_elem()
 	return p;
 }
 
-// Cria um item para a lista de Matrizes
-Item_Lista *cria_item()
+// Cria uma Matriz_Lista para a Lista de Matrizes
+Matriz_Lista *cria_matriz()
 {
-	Item_Lista *p;
-	p = (Item_Lista *)malloc(sizeof(Item_Lista));
+	Matriz_Lista *p;
+	p = (Matriz_Lista *)malloc(sizeof(Matriz_Lista));
 	if (!p)
 	{
 		printf("Problema de alocacao");
@@ -56,86 +63,120 @@ Item_Lista *cria_item()
 	return p;
 }
 
-// Insere um novo Elemento em uma Matriz Esparsa
-void insere_matriz(Elemento **N, float dado, int lin, int col)
-{
-	Elemento *novo, *aux;
-	novo = cria_elem();
-	novo->dado = dado;
-	novo->lin = lin;
-	novo->col = col;
-	novo->prox = NULL;
-	if (*N == NULL)
-		*N = novo;
-	else
-	{
-		aux = *N;
-		while (aux->prox != NULL)
-			aux = aux->prox;
-		aux->prox = novo;
-	}
-}
+// INSERÇÃO DE TDA
 
-// Insere um novo item na Lista de Matrizes Esparsas
-void insere_lista(Item_Lista **N)
+// Insere um novo Elemento em um Matriz_Lista (Matriz Esparsa)
+void insere_elemento(Elemento **N, float dado, int l, int c)
 {
-	Item_Lista *novo, *aux;
-	novo = cria_item();
-	novo->prox = NULL;
-	novo->prim = NULL;
-	if (*N == NULL)
-	{
-		*N = novo;
-		novo->id = 1;
+	Elemento *novo_e, *aux;
+	novo_e = cria_elem();
+	novo_e->dado = dado;
+	novo_e->l = l;
+	novo_e->c = c;
+	novo_e->prox = NULL;
+	if (*N == NULL) {
+		*N = novo_e;
 	}
 	else
 	{
 		aux = *N;
 		while (aux->prox != NULL)
-			aux = aux->prox;
-		aux->prox = novo;
-		novo->id = aux->id + 1;
-		printf("Nova Matriz Adicionada A lista, ID : %d", novo->id);
+		aux = aux->prox;
+		aux->prox = novo_e;
+	}
+
+	printf("Elemento inserido com sucesso!\n");
+	printf("Dado: %.2f | Linha %d Coluna %d\n", dado, l, c);
+}
+
+// Valida os dados de entrada de um elemento e depois chama a inserção
+void menu_insere_elemento(Matriz_Lista *matriz_vez, int max_l, int max_c)
+{
+	int continuar = 1;
+	while (continuar)
+	{
+		float dado;
+		int l, c;
+		printf("Dado a ser inserido: ");
+		scanf("%f", &dado);
+		do {
+			printf("Linha de input: ");
+			scanf("%d", &l);
+			if (l>max_l) {
+				printf("Linha nao disponivel. (Limite: %d)\n", max_l);
+				printf("Tente Novamente\n\n");
+			}
+		} while (l>max_l);
+		do {
+			printf("Coluna de input: ");
+			scanf("%d", &c);
+			if (c>max_c) {
+				printf("Coluna nao disponivel. (Limite: %d)\n", max_c);
+				printf("Tente Novamente\n\n");
+			} 
+		} while (c>max_c);
+
+		insere_elemento(&(matriz_vez->prim),dado, l, c);
+
+		printf("Continuar a inserir dados? (0 para sair): ");
+		scanf("%d", &continuar);
 	}
 }
 
-// Chamada via menu do insere_matriz
-void menu_insere_matriz(Elemento **matriz)
-{
-	float valor;
-	int lin;
-	int col;
-	printf("Digite o valor do Elemento: ");
-	scanf("%f", &valor);
-	printf("Digite a linha a ser inserida: ");
-	scanf("$d", &lin);
-	printf("Digite a coluna a ser inserida: ");
-	scanf("%d", &col);
-	insere_matriz(matriz, valor, lin, col);
-	printf("Valor %.2f inserido com sucesso na linha &d e Coluna &d \n", valor, lin, col);
+// ================= CHAMADAS MENU =================
+
+// Inserção da matriz na lista
+void menu_insere_matriz(Matriz_Lista **lista)
+{	
+	Matriz_Lista *nova_m, *aux;
+	nova_m = cria_matriz();
+	nova_m->prox = NULL;
+	nova_m->prim = NULL;
+
+	printf("\nDimensoes da Matriz\n");
+	printf("Linhas: ");
+	scanf("%d", &nova_m->lin);
+	printf("Colunas: ");
+	scanf("%d", &nova_m->col);
+	printf("\nNova Matriz Inicializada com Sucesso.\n");
+
+	if (*lista == NULL)
+	{
+		*lista = nova_m;
+		nova_m->id = 1;
+	}
+	else
+	{
+		aux = *lista;
+		while (aux->prox != NULL) {
+			aux = aux->prox;
+		}
+		aux->prox = nova_m;
+		nova_m->id = aux->id + 1;
+	}
+	printf("Nova matriz adicionada a lista | ID : %d\n\n", nova_m->id);
+
+	menu_insere_elemento(nova_m, nova_m->lin, nova_m->col);
 }
 
-// Chamada via menu do insere_lista
-void menu_insere_lista(Item_Lista **lista)
-{
-	insere_lista(lista);
-	printf("Nova Matriz Inicializada com Sucesso.");
-}
+// ================= INICIALIZAÇÃO =================
 
-// Inicializa a lista que armazena todas as Matrizes da sess?o
-void inicializa_lista(Item_Lista **N)
+// Inicializa a lista que armazena todas as Matrizes da sessão
+void inicializa_lista(Matriz_Lista **N) 
 {
 	*N = NULL;
 }
 
+// ================= MAIN =================
+
 int main()
 {
-	Item_Lista *lista;
+	Matriz_Lista *lista; // ponteiro externo para Lista de Matrizes
 	
 	inicializa_lista(&lista);
 	
 	OpcaoMenu menu[] = {
-		{"Inicializar Nova Lista", menu_insere_lista}};
+		{"Inicializar Nova Matriz", menu_insere_matriz}};
 
 	int quantidadeOpcoes = sizeof(menu) / sizeof(menu[0]);
 	int escolha;
@@ -143,14 +184,14 @@ int main()
 
 	while (1)
 	{
-		printf("\n====MENU PRINCIPAL====\n");
+		printf("\n====== MENU PRINCIPAL ======\n");
 
 		for (i = 0; i < quantidadeOpcoes; i++)
 		{
 			printf("[%d] - %s\n", i + 1, menu[i].titulo);
 		}
 		printf("[%d] - Sair\n", quantidadeOpcoes + 1);
-		printf("Escolha uma opcao:");
+		printf("Escolha uma opcao: ");
 		scanf("%d", &escolha);
 
 		if (escolha > 0 && escolha <= quantidadeOpcoes)
@@ -166,7 +207,6 @@ int main()
 		{
 			printf("Opcao Invalida!\n");
 		}
-		system("cls");
 	}
 
 	return 0;
