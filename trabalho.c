@@ -100,6 +100,7 @@ void imprime_matriz(Matriz_Lista *matriz)
 	int achou;
 
 	printf("\n--- Exibindo Matriz %02d (%dx%d) ---\n", matriz->id, matriz->lin, matriz->col);
+	printf("\n----------------------------------\n");
 
 	// Varre todas as posicoes possiveis baseadas nas dimensoes da matriz
 	for (i = 0; i < matriz->lin; i++)
@@ -139,6 +140,7 @@ void imprime_diagonal_principal(Matriz_Lista *matriz)
 	int achou;
 
 	printf("\n--- Exibindo Diagonal Principal da Matriz %02d (%dx%d) ---\n", matriz->id, matriz->lin, matriz->col);
+	printf("\n----------------------------------\n");
 
 	// Varre todas as posicoes possiveis baseadas nas dimensoes da matriz
 	for (i = 0; i < matriz->lin; i++)
@@ -183,6 +185,7 @@ void imprime_transposta(Matriz_Lista *matriz)
 
 	printf("\n--- Exibindo Transposta da Matriz %02d (%dx%d) ---\n", matriz->id, matriz->lin, matriz->col);
 	printf("--- Dimensao Original (%dx%d) | Dimensao Transposta (%dx%d) ---\n", matriz->lin, matriz->col, matriz->col, matriz->lin);
+	printf("\n----------------------------------\n");
 
 	// Varre todas as posicoes possiveis baseadas nas dimensoes da matriz
 	for (i = 0; i < matriz->col; i++)
@@ -330,6 +333,42 @@ void imprime_subtracao_matrizes(Matriz_Lista *m1, Matriz_Lista *m2)
 	printf("-------------------------------------------\n\n");
 }
 
+void busca_dados(Matriz_Lista *matriz_vez) {
+	int continuar = 1;
+	while (continuar) 
+	{
+		Elemento *aux;
+		aux = matriz_vez->prim;
+		float dado;
+		int encontrado = 0;
+		
+		printf("\nDigite o dado que deseja buscar na matriz: ");
+		scanf("%f", &dado);
+
+		while (aux!=NULL)
+		{
+			if (aux->dado==dado) {
+				printf("\nDado %.2f encontrado na linha %d coluna %d\n", dado, aux->l, aux->c);
+				encontrado = 1;
+			}
+			aux = aux->prox;
+		}
+
+		if (!encontrado)
+		{
+			printf("\nDado nao encontrado na matriz.\n");
+		}
+
+		do {
+			printf("\nContinuar a buscar dados? \n[1] Continuar \n[0] Sair \nOpcao: ");
+			scanf("%d", &continuar);
+			if (continuar<0 || continuar>1) {
+				printf("\nOpcao Invalida. Tente Novamente.\n");
+			}
+		} while (continuar<0 || continuar>1);
+		
+	}
+}
 
 
 
@@ -395,6 +434,8 @@ void menu_insere_matriz(Matriz_Lista **lista)
 	nova_m->prox = NULL;
 	nova_m->prim = NULL;
 
+	int continuar;
+
 	printf("\nDimensoes da Matriz\n");
 	printf("Linhas: ");
 	scanf("%d", &nova_m->lin);
@@ -419,7 +460,17 @@ void menu_insere_matriz(Matriz_Lista **lista)
 	}
 	printf("Nova Matriz Adicionada a Lista! | ID : %d\n", nova_m->id);
 
-	menu_insere_elemento(nova_m, nova_m->lin, nova_m->col);
+	do {
+		printf("\nDeseja inserir elementos? \n[1] Continuar \n[0] Sair \nOpcao: ");
+		scanf("%d", &continuar);
+		if (continuar<0 || continuar>1) {
+			printf("\nOpcao Invalida. Tente Novamente.\n");
+		}
+	} while (continuar<0 || continuar>1);
+
+	if (continuar) {
+		menu_insere_elemento(nova_m, nova_m->lin, nova_m->col);
+	}
 }
 
 // Exibe as matrizes disponiveis e chama a funcao de impressao da escolhida
@@ -465,7 +516,7 @@ void menu_imprime_matriz(Matriz_Lista **lista)
 
 	if (!encontrada)
 	{
-		printf("Opcao de matriz invalida!\n\n");
+		printf("Opcao invalida!\n\n");
 	}
 }
 
@@ -579,8 +630,6 @@ void menu_subtracao_matrizes(Matriz_Lista **lista)
 	}
 }
 
-
-
 // Recebe uma matriz do usuário e envia para a função de transposta
 void menu_imprime_transposta(Matriz_Lista **lista)
 {
@@ -624,7 +673,7 @@ void menu_imprime_transposta(Matriz_Lista **lista)
 
 	if (!encontrada)
 	{
-		printf("Opcao de matriz invalida!\n\n");
+		printf("Opcao invalida!\n\n");
 	}
 }
 
@@ -639,6 +688,7 @@ void menu_imprime_diagonal_principal(Matriz_Lista **lista)
 
 	Matriz_Lista *aux = *lista;
 	int escolha;
+	int quadradaencontrada = 0;
 	int encontrada = 0;
 
 	printf("\n====== MATRIZES DISPONIVEIS ======\n");
@@ -647,18 +697,67 @@ void menu_imprime_diagonal_principal(Matriz_Lista **lista)
 	{
 		if (aux->lin == aux->col) {
 			printf("[%d] - Matriz %02d (Dimensoes: %dx%d)\n", aux->id, aux->id, aux->lin, aux->col);
-			encontrada = 1;
+			quadradaencontrada = 1;
 		}
 		aux = aux->prox;
 	}
 
 	printf("[0] - Voltar\n");
 
-	if (!encontrada) {
-		printf("Nao ha matrizes disponiveis para esta escolha. Tecle 0: ");
+	if (!quadradaencontrada) {
+		printf("Nao ha matrizes disponiveis para esta escolha. ");
 	} else {
 		printf("Escolha a matriz que deseja imprimir: ");
 	}
+	scanf("%d", &escolha);
+
+	if (escolha == 0)
+	{
+		return;
+	} 
+
+	aux = *lista;
+	while (aux != NULL)
+	{
+		if (aux->id == escolha)
+		{
+			if (aux->lin == aux->col) {
+				imprime_diagonal_principal(aux);
+				encontrada = 1;
+				break;
+			}
+		}
+		aux = aux->prox;
+	}
+
+	if (!encontrada)
+	{
+		printf("Opcao invalida!\n\n");
+	}
+}
+
+// Recebe uma matriz do usuario e chama a função busca_matriz
+void menu_busca_dados(Matriz_Lista **lista)
+{
+	if (*lista == NULL)
+	{
+		printf("\nNenhuma matriz foi inicializada ainda!\n\n");
+		return;
+	}
+
+	Matriz_Lista *aux = *lista;
+	int escolha;
+	int encontrada = 0;
+
+	printf("\n====== MATRIZES DISPONIVEIS ======\n");
+	while (aux != NULL)
+	{
+		printf("[%d] - Matriz %02d (Dimensoes: %dx%d)\n", aux->id, aux->id, aux->lin, aux->col);
+		aux = aux->prox;
+	}
+	printf("[0] - Voltar\n");
+
+	printf("Escolha a matriz que deseja buscar os dados: ");
 	scanf("%d", &escolha);
 
 	if (escolha == 0)
@@ -671,7 +770,8 @@ void menu_imprime_diagonal_principal(Matriz_Lista **lista)
 	{
 		if (aux->id == escolha)
 		{
-			imprime_diagonal_principal(aux);
+			busca_dados(aux);
+			encontrada = 1;
 			break;
 		}
 		aux = aux->prox;
@@ -679,7 +779,7 @@ void menu_imprime_diagonal_principal(Matriz_Lista **lista)
 
 	if (!encontrada)
 	{
-		printf("Opcao de matriz invalida!\n\n");
+		printf("Opcao invalida!\n\n");
 	}
 }
 
@@ -706,7 +806,8 @@ int main()
 		{"Imprimir Transpostas", menu_imprime_transposta},
 		{"Imprimir Diagonal Principal", menu_imprime_diagonal_principal},
 		{"Somar Matrizes", menu_soma_matrizes},
-		{"Subtrair Matrizes", menu_subtracao_matrizes}
+		{"Subtrair Matrizes", menu_subtracao_matrizes},
+		{"Buscar Dados", menu_busca_dados}
 	};
 
 	int quantidadeOpcoes = sizeof(menu) / sizeof(menu[0]);
@@ -715,7 +816,7 @@ int main()
 
 	while (1)
 	{
-		printf("\n====== MENU PRINCIPAL ======\n");
+		printf("\n======== MENU PRINCIPAL ========\n");
 
 		for (i = 0; i < quantidadeOpcoes; i++)
 		{
