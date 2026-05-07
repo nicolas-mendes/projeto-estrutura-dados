@@ -4,7 +4,7 @@
 
 // ================= STRUCTS =================
 
-// Tipo Elemento (Cada dado de uma Matriz_Lista (Matriz Esparsa))
+// Tipo "Elemento" (Cada dado de uma Matriz Esparsa)
 typedef struct elemento
 {
     float dado;
@@ -16,13 +16,13 @@ typedef struct elemento
 typedef struct matriz
 {
     int id;
-    char nome[50]; // NOVA VARIAVEL: Nome de identificacao automatica da matriz
-    int lin, col;  // limite de l e c do elemento
-    Elemento *prim;
+    char nome[50];  // Nome de identificacao da matriz
+    int lin, col;   // limite de l e c do elemento
+    Elemento *prim; // Primeiro Elemento da Matriz
     struct matriz *prox;
 } Matriz_Lista;
 
-// Criação do tipo OpcaoMenu (Apenas para organização do menu de opções)
+// Tipo OpcaoMenu (Apenas para organização do menu de opções)
 typedef struct
 {
     char titulo[50];
@@ -30,6 +30,56 @@ typedef struct
 } OpcaoMenu;
 
 // ================= FUNÇÕES =================
+
+// Funções de Validação de Input
+
+// Lê um número inteiro de forma totalmente segura contra letras e lixo
+int ler_inteiro()
+{
+    int valor;
+    int leitura_valida;
+
+    while (1)
+    {
+        leitura_valida = scanf("%d", &valor);
+
+        while (getchar() != '\n')
+            ;
+
+        if (leitura_valida == 1)
+        {
+            return valor;
+        }
+        else
+        {
+            printf("Erro: Entrada invalida! Digite apenas numeros inteiros: ");
+        }
+    }
+}
+
+// Lê um número float (decimal) de forma segura
+float ler_float()
+{
+    float valor;
+    int leitura_valida;
+
+    while (1)
+    {
+        leitura_valida = scanf("%f", &valor);
+
+        while (getchar() != '\n')
+            ;
+
+        if (leitura_valida == 1)
+        {
+            return valor;
+        }
+        else
+        {
+            printf("Erro: Entrada invalida! Digite apenas numeros: ");
+        }
+    }
+}
 
 // CRIAÇÃO DE TDA (alocando espaço na memória)
 
@@ -61,31 +111,43 @@ Matriz_Lista *cria_matriz()
 
 // INSERÇÃO DE TDA
 
-// Insere um novo Elemento em um Matriz_Lista (Matriz Esparsa)
+// Insere um novo Elemento em uma Matriz Esparsa
 void insere_elemento(Elemento **N, float dado, int l, int c)
 {
-    Elemento *novo_e, *aux;
-    novo_e = cria_elem();
+    Elemento *aux = *N;
+    Elemento *ultimo = NULL; // Guarda a referencia do ultimo no visitado
+
+    // Verifica se a coordenada já existe
+    while (aux != NULL)
+    {
+        if (aux->l == l && aux->c == c)
+        {
+            aux->dado = dado;
+            return;
+        }
+        ultimo = aux;
+        aux = aux->prox;
+    }
+
+    Elemento *novo_e = cria_elem();
     novo_e->dado = dado;
     novo_e->l = l;
     novo_e->c = c;
     novo_e->prox = NULL;
-    if (*N == NULL)
+
+    if (ultimo == NULL)
     {
         *N = novo_e;
     }
     else
     {
-        aux = *N;
-        while (aux->prox != NULL)
-            aux = aux->prox;
-        aux->prox = novo_e;
+        ultimo->prox = novo_e;
     }
 }
 
 // IMPRESSÃO DE TDA
 
-// Imprime os dados de uma matriz no terminal
+// Imprime os dados de uma Matriz Esparsa no terminal
 void imprime_matriz(Matriz_Lista *matriz)
 {
     int i, j;
@@ -196,7 +258,7 @@ void gera_soma_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_Lista *m2
     nova_m->id = aux_lista->id + 1;
 
     // Gerando o nome padronizado
-    sprintf(nova_m->nome, "matriz_soma_%d_%d", m1->id, m2->id);
+    sprintf(nova_m->nome, "matriz_%02d_soma_%d_e_%d", nova_m->id, m1->id, m2->id);
 
     int i, j;
     Elemento *aux_e;
@@ -269,7 +331,7 @@ void gera_subtracao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_List
     nova_m->id = aux_lista->id + 1;
 
     // Gerando o nome padronizado
-    sprintf(nova_m->nome, "matriz_subtracao_%d_%d", m1->id, m2->id);
+    sprintf(nova_m->nome, "matriz_%02d_subtracao_%d_e_%d", nova_m->id, m1->id, m2->id);
 
     int i, j;
     Elemento *aux_e;
@@ -337,7 +399,7 @@ void gera_transposta(Matriz_Lista **lista, Matriz_Lista *orig)
     nova_m->id = aux_lista->id + 1;
 
     // Gerando o nome padronizado
-    sprintf(nova_m->nome, "matriz_transposta_%d", orig->id);
+    sprintf(nova_m->nome, "matriz_%02d_transposta_%d", nova_m->id, orig->id);
 
     Elemento *aux_e = orig->prim;
     while (aux_e != NULL)
@@ -363,7 +425,7 @@ void busca_dados(Matriz_Lista *matriz_vez)
         int encontrado = 0;
 
         printf("\nDigite o dado que deseja buscar na matriz: ");
-        scanf("%f", &dado);
+        dado = ler_float();
 
         while (aux != NULL)
         {
@@ -383,12 +445,12 @@ void busca_dados(Matriz_Lista *matriz_vez)
         do
         {
             printf("\nContinuar a buscar dados? \n[1] Continuar \n[0] Sair \nOpcao: ");
-            scanf("%d", &continuar);
+            continuar = ler_inteiro();
         } while (continuar < 0 || continuar > 1);
     }
 }
 
-// Realiza a multiplicacaode duas matrizes, salva na lista e imprime
+// Realiza a multiplicacao de duas matrizes, salva na lista e imprime
 void gera_multiplicacao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_Lista *m2)
 {
     // Verificacao matematica: Colunas da M1 == Linhas da M2
@@ -399,7 +461,7 @@ void gera_multiplicacao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_
         return;
     }
 
-    // Criando o container do resultado (Dimensoes: Linhas da M1 x Colunas da M2)
+    // Criando a matriz do resultado (Dimensoes: Linhas da M1 x Colunas da M2)
     Matriz_Lista *nova_m = cria_matriz();
     nova_m->lin = m1->lin;
     nova_m->col = m2->col;
@@ -415,7 +477,7 @@ void gera_multiplicacao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_
     nova_m->id = aux_lista->id + 1;
 
     // Gerando o nome padronizado
-    sprintf(nova_m->nome, "matriz_produto_%d_%d", m1->id, m2->id);
+    sprintf(nova_m->nome, "matriz_%02d_produto_%d_%d", nova_m->id, m1->id, m2->id);
 
     int i, j, k;
     Elemento *aux_e;
@@ -444,7 +506,7 @@ void gera_multiplicacao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_
                     aux_e = aux_e->prox;
                 }
 
-                // Se val1 for zero, a multiplicacao por val2 será sempre zero.
+                // (Otimização) Se val1 for zero, a multiplicacao por val2 será sempre zero.
                 if (val1 != 0.0)
                 {
                     // Busca o elemento na Matriz 2 (Linha k, Coluna j)
@@ -474,6 +536,52 @@ void gera_multiplicacao_matrizes(Matriz_Lista **lista, Matriz_Lista *m1, Matriz_
     imprime_matriz(nova_m);
 }
 
+// ================= GERENCIAMENTO DE MEMÓRIA =================
+
+// Libera todos os elementos de dentro de uma matriz especifica
+void libera_elementos(Elemento *prim)
+{
+    Elemento *aux = prim;
+    Elemento *prox;
+
+    while (aux != NULL)
+    {
+        prox = aux->prox;
+        free(aux);
+        aux = prox;
+    }
+}
+
+// Remove a matriz da lista principal e deleta seus elementos
+void exclui_matriz(Matriz_Lista **lista, int id_excluir)
+{
+    Matriz_Lista *aux = *lista;
+    Matriz_Lista *ant = NULL;
+
+    while (aux != NULL && aux->id != id_excluir)
+    {
+        ant = aux;
+        aux = aux->prox;
+    }
+
+    if (aux == NULL)
+        return;
+
+    libera_elementos(aux->prim);
+
+    if (ant == NULL)
+    {
+        *lista = aux->prox;
+    }
+    else
+    {
+        ant->prox = aux->prox;
+    }
+
+    free(aux);
+    printf("\nMatriz %02d excluida com sucesso e memoria totalmente liberada!\n", id_excluir);
+}
+
 // ================= CHAMADAS MENU =================
 
 // Valida os dados de entrada de um elemento e depois chama a inserção
@@ -485,7 +593,8 @@ void menu_insere_elemento(Matriz_Lista *matriz_vez, int max_l, int max_c)
         float dado;
         int l, c;
         printf("\nDado a ser inserido: ");
-        scanf("%f", &dado);
+
+        dado = ler_float();
 
         if (dado == 0)
         {
@@ -496,7 +605,7 @@ void menu_insere_elemento(Matriz_Lista *matriz_vez, int max_l, int max_c)
             do
             {
                 printf("\nLinha de input (0 a %d): ", max_l - 1);
-                scanf("%d", &l);
+                l = ler_inteiro();
                 if (l >= max_l || l < 0)
                     printf("Linha nao disponivel. Tente Novamente\n");
             } while (l >= max_l || l < 0);
@@ -504,7 +613,7 @@ void menu_insere_elemento(Matriz_Lista *matriz_vez, int max_l, int max_c)
             do
             {
                 printf("\nColuna de input (0 a %d): ", max_c - 1);
-                scanf("%d", &c);
+                c = ler_inteiro();
                 if (c >= max_c || c < 0)
                     printf("Coluna nao disponivel. Tente Novamente\n");
             } while (c >= max_c || c < 0);
@@ -517,12 +626,12 @@ void menu_insere_elemento(Matriz_Lista *matriz_vez, int max_l, int max_c)
         do
         {
             printf("\nContinuar a inserir dados? \n[1] Continuar \n[0] Sair \nOpcao: ");
-            scanf("%d", &continuar);
+            continuar = ler_inteiro();
         } while (continuar < 0 || continuar > 1);
     }
 }
 
-// Inserção da matriz na lista
+// Menu para Inicializar uma nova Matriz e Inserir os elementos de Escolha
 void menu_insere_matriz(Matriz_Lista **lista)
 {
     Matriz_Lista *nova_m, *aux;
@@ -533,10 +642,29 @@ void menu_insere_matriz(Matriz_Lista **lista)
     int continuar;
 
     printf("\nDimensoes da Matriz\n");
-    printf("Linhas: ");
-    scanf("%d", &nova_m->lin);
-    printf("Colunas: ");
-    scanf("%d", &nova_m->col);
+
+    do
+    {
+        printf("Linhas: ");
+        nova_m->lin = ler_inteiro();
+
+        if (nova_m->lin <= 0)
+        {
+            printf("A quantidade de linhas deve ser maior que zero, tente novamente.\n\n");
+        }
+    } while (nova_m->lin <= 0);
+
+    do
+    {
+        printf("Colunas: ");
+        nova_m->col = ler_inteiro();
+
+        if (nova_m->col <= 0)
+        {
+            printf("A quantidade de colunas deve ser maior que zero, tente novamente.\n\n");
+        }
+    } while (nova_m->col <= 0);
+
     printf("\nNova Matriz Inicializada com Sucesso.\n");
 
     if (*lista == NULL)
@@ -555,14 +683,14 @@ void menu_insere_matriz(Matriz_Lista **lista)
         nova_m->id = aux->id + 1;
     }
 
-    sprintf(nova_m->nome, "matriz_manual_%d", nova_m->id);
+    sprintf(nova_m->nome, "matriz_manual_%02d", nova_m->id);
 
     printf("Nova Matriz Adicionada a Lista! | ID : %d | Nome : %s\n", nova_m->id, nova_m->nome);
 
     do
     {
         printf("\nDeseja inserir elementos? \n[1] Continuar \n[0] Sair \nOpcao: ");
-        scanf("%d", &continuar);
+        continuar = ler_inteiro();
     } while (continuar < 0 || continuar > 1);
 
     if (continuar)
@@ -571,7 +699,7 @@ void menu_insere_matriz(Matriz_Lista **lista)
     }
 }
 
-// Exibe as matrizes disponiveis
+// Menu para Listar todas as Matrizes e Imprimir a de escolha
 void menu_imprime_matriz(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -593,7 +721,7 @@ void menu_imprime_matriz(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("Escolha a matriz que deseja imprimir: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
@@ -614,7 +742,7 @@ void menu_imprime_matriz(Matriz_Lista **lista)
         printf("Opcao invalida!\n\n");
 }
 
-// Menu de multiplicacao com verificacao de cache
+// Menu para Multiplicação de Matrizes
 void menu_multiplicacao_matrizes(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -636,29 +764,14 @@ void menu_multiplicacao_matrizes(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("\nEscolha o ID da Primeira Matriz (Esquerda da Equacao): ");
-    scanf("%d", &id1);
+    id1 = ler_inteiro();
     if (id1 == 0)
         return;
 
     printf("Escolha o ID da Segunda Matriz (Direita da Equacao): ");
-    scanf("%d", &id2);
+    id2 = ler_inteiro();
     if (id2 == 0)
         return;
-
-    char nome_busca[50];
-    sprintf(nome_busca, "matriz_produto_%d_%d", id1, id2);
-
-    aux = *lista;
-    while (aux != NULL)
-    {
-        if (strcmp(aux->nome, nome_busca) == 0)
-        {
-            printf("\nOperacao ja calculada anteriormente! Exibindo matriz salva no cache...\n");
-            imprime_matriz(aux);
-            return;
-        }
-        aux = aux->prox;
-    }
 
     // Busca os ponteiros originais para o calculo
     aux = *lista;
@@ -681,7 +794,7 @@ void menu_multiplicacao_matrizes(Matriz_Lista **lista)
     }
 }
 
-// Menu de Soma com verificacao de Cache
+// Menu para Soma de Matrizes
 void menu_soma_matrizes(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -703,30 +816,14 @@ void menu_soma_matrizes(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("\nEscolha o ID da Primeira Matriz: ");
-    scanf("%d", &id1);
+    id1 = ler_inteiro();
     if (id1 == 0)
         return;
 
     printf("Escolha o ID da Segunda Matriz: ");
-    scanf("%d", &id2);
+    id2 = ler_inteiro();
     if (id2 == 0)
         return;
-
-    char nome_busca_1[50], nome_busca_2[50];
-    sprintf(nome_busca_1, "matriz_soma_%d_%d", id1, id2);
-    sprintf(nome_busca_2, "matriz_soma_%d_%d", id2, id1); // Em soma, ordem nao altera o resultado
-
-    aux = *lista;
-    while (aux != NULL)
-    {
-        if (strcmp(aux->nome, nome_busca_1) == 0 || strcmp(aux->nome, nome_busca_2) == 0)
-        {
-            printf("\nOperacao ja calculada anteriormente! Exibindo matriz salva no cache...\n");
-            imprime_matriz(aux);
-            return;
-        }
-        aux = aux->prox;
-    }
 
     aux = *lista;
     while (aux != NULL)
@@ -748,7 +845,7 @@ void menu_soma_matrizes(Matriz_Lista **lista)
     }
 }
 
-// Menu de subtracao com verificacao de cache
+// Menu para Subtração de Matrizes
 void menu_subtracao_matrizes(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -770,29 +867,14 @@ void menu_subtracao_matrizes(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("\nEscolha o ID da Primeira Matriz: ");
-    scanf("%d", &id1);
+    id1 = ler_inteiro();
     if (id1 == 0)
         return;
 
     printf("Escolha o ID da Segunda Matriz: ");
-    scanf("%d", &id2);
+    id2 = ler_inteiro();
     if (id2 == 0)
         return;
-
-    char nome_busca[50];
-    sprintf(nome_busca, "matriz_subtracao_%d_%d", id1, id2);
-
-    aux = *lista;
-    while (aux != NULL)
-    {
-        if (strcmp(aux->nome, nome_busca) == 0)
-        {
-            printf("\nOperacao ja calculada anteriormente! Exibindo matriz salva no cache...\n");
-            imprime_matriz(aux);
-            return;
-        }
-        aux = aux->prox;
-    }
 
     aux = *lista;
     while (aux != NULL)
@@ -814,7 +896,7 @@ void menu_subtracao_matrizes(Matriz_Lista **lista)
     }
 }
 
-// Menu Transposta com verificacao de cache
+// Menu para Gerar a Matriz transposta
 void menu_gera_transposta(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -836,25 +918,10 @@ void menu_gera_transposta(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("Escolha a matriz que deseja gerar a transposta: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
-
-    char nome_busca[50];
-    sprintf(nome_busca, "matriz_transposta_%d", escolha);
-
-    aux = *lista;
-    while (aux != NULL)
-    {
-        if (strcmp(aux->nome, nome_busca) == 0)
-        {
-            printf("\nOperacao ja calculada anteriormente! Exibindo matriz salva no cache...\n");
-            imprime_matriz(aux);
-            return;
-        }
-        aux = aux->prox;
-    }
 
     aux = *lista;
     while (aux != NULL)
@@ -872,6 +939,7 @@ void menu_gera_transposta(Matriz_Lista **lista)
         printf("Opcao invalida!\n\n");
 }
 
+// Menu para imprimir a Diagonal Principal da Matriz
 void menu_imprime_diagonal_principal(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -906,7 +974,7 @@ void menu_imprime_diagonal_principal(Matriz_Lista **lista)
     }
 
     printf("Escolha a matriz que deseja imprimir: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
@@ -952,7 +1020,7 @@ void menu_busca_dados(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("Escolha a matriz que deseja buscar os dados: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
@@ -973,7 +1041,7 @@ void menu_busca_dados(Matriz_Lista **lista)
         printf("Opcao invalida!\n\n");
 }
 
-// Menu interativo para exclusao
+// Menu para exclusao de Matrizes
 void menu_exclui_matriz(Matriz_Lista **lista)
 {
     if (*lista == NULL)
@@ -995,7 +1063,7 @@ void menu_exclui_matriz(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("\nEscolha o ID da matriz que deseja excluir do sistema: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
@@ -1043,7 +1111,7 @@ void menu_inserir_dados_matriz(Matriz_Lista **lista)
     printf("[0] - Voltar\n");
 
     printf("\nEscolha o ID da matriz para inserir novos dados: ");
-    scanf("%d", &escolha);
+    escolha = ler_inteiro();
 
     if (escolha == 0)
         return;
@@ -1056,9 +1124,12 @@ void menu_inserir_dados_matriz(Matriz_Lista **lista)
             encontrada = 1;
             printf("\n--- Inserindo dados na Matriz %02d (%dx%d) ---\n", aux->id, aux->lin, aux->col);
 
-            // Aqui esta o reaproveitamento de comportamento!
-            // Chama a mesma funcao usada na criacao da matriz
             menu_insere_elemento(aux, aux->lin, aux->col);
+
+            if (strstr(aux->nome, "_mod") == NULL)
+            {
+                strcat(aux->nome, "_mod");
+            }
             break;
         }
         aux = aux->prox;
@@ -1070,53 +1141,7 @@ void menu_inserir_dados_matriz(Matriz_Lista **lista)
     }
 }
 
-// ================= GERENCIAMENTO DE MEMÓRIA (EXCLUSÃO) =================
-
-// Libera todos os elementos de dentro de uma matriz especifica
-void libera_elementos(Elemento *prim)
-{
-    Elemento *aux = prim;
-    Elemento *prox;
-
-    while (aux != NULL)
-    {
-        prox = aux->prox;
-        free(aux);
-        aux = prox;
-    }
-}
-
-// Remove a matriz da lista principal e deleta seus elementos
-void exclui_matriz(Matriz_Lista **lista, int id_excluir)
-{
-    Matriz_Lista *aux = *lista;
-    Matriz_Lista *ant = NULL;
-
-    while (aux != NULL && aux->id != id_excluir)
-    {
-        ant = aux;
-        aux = aux->prox;
-    }
-
-    if (aux == NULL)
-        return;
-
-    libera_elementos(aux->prim);
-
-    if (ant == NULL)
-    {
-        *lista = aux->prox;
-    }
-    else
-    {
-        ant->prox = aux->prox;
-    }
-
-    free(aux);
-    printf("\nMatriz %02d excluida com sucesso e memoria totalmente liberada!\n", id_excluir);
-}
-
-// ================= UTILITÁRIOS DE TELA =================
+// ================= FUNÇÕES DE CONTROLE DO TERMINAL =================
 
 // Limpa a tela
 void limpa_tela()
@@ -1128,12 +1153,6 @@ void limpa_tela()
 void pausa_tela()
 {
     printf("\n[Pressione ENTER para voltar ao menu principal]");
-
-    // Limpa o buffer do teclado (restos do scanf anterior)
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-        ;
-
     getchar();
 }
 
@@ -1181,7 +1200,7 @@ int main()
         }
         printf("[%d] - Sair\n", quantidadeOpcoes + 1);
         printf("Escolha uma opcao: ");
-        scanf("%d", &escolha);
+        escolha = ler_inteiro();
 
         if (escolha > 0 && escolha <= quantidadeOpcoes)
         {
@@ -1199,6 +1218,10 @@ int main()
             pausa_tela();
         }
     }
-
+    printf("Encerrando e liberando memoria...\n");
+    while (lista != NULL)
+    {
+        exclui_matriz(&lista, lista->id);
+    }
     return 0;
 }
